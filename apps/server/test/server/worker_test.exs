@@ -4,20 +4,20 @@ defmodule Server.WorkerTest do
 
   describe "start_link" do
     test "starts the server process" do
-      {:ok, pid} = Server.Worker.start_link("name")
+      {:ok, pid} = Server.Worker.start_link(name: "name")
 
       assert Process.alive?(pid)
     end
 
     test "registers the passed name globally" do
-      {:ok, _} = Server.Worker.start_link("name")
+      {:ok, _} = Server.Worker.start_link(name: "name")
 
       assert Process.alive?(:global.whereis_name("name"))
     end
   end
 
   setup do
-    {:ok, _} = Server.Worker.start_link(:test_server)
+    {:ok, _} = Server.Worker.start_link(name: :test_server)
     :ok
   end
 

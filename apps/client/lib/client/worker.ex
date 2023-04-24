@@ -1,11 +1,11 @@
 defmodule Client.Worker do
   use GenServer
 
-  @server_name Application.get_env(:client, :server_name, :enchatter_server)
-  @reconnect_timeout Application.get_env(:client, :reconnect_timeout, 5000)
+  @server_name Application.compile_env(:client, :server_name, :enchatter_server)
+  @reconnect_timeout Application.compile_env(:client, :reconnect_timeout, 5000)
 
-  def start_link(nick, name) do
-    GenServer.start_link(__MODULE__, nick, name: name)
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts[:nick], name: opts[:name])
   end
 
   def init(nick) do

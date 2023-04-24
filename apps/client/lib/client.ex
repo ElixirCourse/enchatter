@@ -38,10 +38,8 @@ defmodule Client do
   end
 
   defp start_client(nick) do
-    import Supervisor.Spec, warn: false
-
     children = [
-      worker(Client.Worker, [nick, :enchatter_client])
+      {Client.Worker, [nick: nick, name: :enchatter_client]}
     ]
 
     opts = [strategy: :one_for_one, name: Client.Supervisor]

@@ -6,13 +6,13 @@ defmodule Client.WorkerTest do
 
   describe "start_link" do
     test "starts the client process" do
-      {:ok, pid} = Worker.start_link("meddle", :name)
+      {:ok, pid} = Worker.start_link(nick: "meddle", name: :name)
 
       assert Process.alive?(pid)
     end
 
     test "registers the passed name" do
-      {:ok, pid} = Worker.start_link("valo", :name)
+      {:ok, pid} = Worker.start_link(nick: "valo", name: :name)
 
       assert Process.whereis(:name) == pid
     end
@@ -21,12 +21,15 @@ defmodule Client.WorkerTest do
   defmodule TestServer do
     use GenServer
 
-    @server_name Application.get_env(:client, :server_name, :test_server)
+    @server_name Application.compile_env(:client, :server_name, :test_enchatter_server)
+
+    def init(state), do: {:ok, state}
 
     def server_name, do: @server_name
 
     def start_link do
       state = %{clients: [], messages: []}
+      IO.inspect(@server_name, label: "SERVER NAME")
       GenServer.start_link(__MODULE__, state, name: {:global, server_name()})
     end
 
@@ -55,9 +58,11 @@ defmodule Client.WorkerTest do
 
   setup do
     {:ok, _} = TestServer.start_link()
-    {:ok, _} = Worker.start_link("valo", :valo_test_client)
-    {:ok, _} = Worker.start_link("slavi", :slavi_test_client)
-    {:ok, _} = Worker.start_link("meddle", :meddle_test_client)
+    true = is_pid(:global.whereis_name(:test_enchatter_server))
+
+    {:ok, _} = Worker.start_link(nick: "valo", name: :valo_test_client)
+    {:ok, _} = Worker.start_link(nick: "slavi", name: :slavi_test_client)
+    {:ok, _} = Worker.start_link(nick: "meddle", name: :meddle_test_client)
     :ok
   end
 
@@ -211,9 +216,9 @@ defmodule Client.WorkerTest do
       Process.sleep(1000)
 
       connected = GenServer.call(:meddle_test_client, :list_users)
-      assert connected |> Enum.member?("meddle")
-      assert connected |> Enum.member?("slavi")
-      assert connected |> Enum.member?("valo")
+      assert Enum.member?(connected, "meddle")
+      assert Enum.member?(connected, "slavi")
+      assert Enum.member?(connected, "valo")
     end
   end
 end

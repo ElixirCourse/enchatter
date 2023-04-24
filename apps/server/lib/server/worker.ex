@@ -3,10 +3,13 @@ defmodule Server.Worker do
 
   require Logger
 
-  def start_link(name) do
-    GenServer.start_link(__MODULE__, nil, name: {:global, name})
+  def start_link(opts) do
+    name = opts[:name]
+    IO.puts "Running under name: #{inspect(name)}"
+    GenServer.start_link(__MODULE__, name, name: {:global, name})
   end
 
+  # Callbacks
   def init(_) do
     {:ok, %{}}
   end
@@ -54,11 +57,13 @@ defmodule Server.Worker do
   end
 
   defp broadcast(clients, from, message) do
-    Enum.map(clients, fn {_, registered_node} ->
+    clients
+    |> Enum.map(fn {_, registered_node} ->
       Task.async(fn ->
         send_message(registered_node, from, message)
       end)
-    end) |> Enum.map(&Task.await/1)
+    end)
+    |> Enum.map(&Task.await/1)
   end
 
   defp send_message(registered_node, from, message) do
