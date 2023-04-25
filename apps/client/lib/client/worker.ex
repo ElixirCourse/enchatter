@@ -1,6 +1,8 @@
 defmodule Client.Worker do
   use GenServer
 
+  require Logger
+
   @server_name Application.compile_env(:client, :server_name, :enchatter_server)
   @reconnect_timeout Application.compile_env(:client, :reconnect_timeout, 5000)
 
@@ -16,7 +18,8 @@ defmodule Client.Worker do
     {:noreply, state}
   end
 
-  def handle_info({:DOWN, ref, _, _,  _}, %{connection_ref: ref} = state) do
+  def handle_info({:DOWN, ref, _, _pid, reason}, %{connection_ref: ref} = state) do
+    Logger.info("Server died due to: #{inspect(reason)}")
     {:noreply, retry_connect(state)}
   end
 
